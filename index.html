@@ -247,7 +247,7 @@ async function login() {
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbz3jC7hlwzzARC8QWQBkZzILDeYRIO0zQjiiWZABmy361sF8q8A8t-LBQ6AXeMquvxZsw/exec?email=${email.value}&password=${pass.value}`);
+        const res = await fetch(`https://script.google.com/macros/s/AKfycbz9_f0ewPStqdlgHOYbQaDbc0X9-3gg0mGkOm_67XzRc4rBcQlmNrbhUM89IXH_TfuY4w/exec?email=${email.value}&password=${pass.value}`);
         const data = await res.json();
 
         btn.classList.remove("loading");
@@ -294,7 +294,7 @@ async function register() {
     };
 
     try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbz3jC7hlwzzARC8QWQBkZzILDeYRIO0zQjiiWZABmy361sF8q8A8t-LBQ6AXeMquvxZsw/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbz9_f0ewPStqdlgHOYbQaDbc0X9-3gg0mGkOm_67XzRc4rBcQlmNrbhUM89IXH_TfuY4w/exec", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
