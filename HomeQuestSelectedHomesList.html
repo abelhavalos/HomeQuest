@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Selected Home Listings</title>
+
+<!-- Leaflet (FREE Map API) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+    :root {
+        --hq-primary: #4a6cf7;
+        --hq-bg: #f4f6fb;
+        --hq-card: #ffffff;
+        --hq-muted: #6b7280;
+        --hq-radius: 14px;
+        --hq-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: var(--hq-bg);
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--hq-primary);
+        margin-bottom: 20px;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    /* Filters */
+    .filters {
+        background: var(--hq-card);
+        padding: 20px;
+        border-radius: var(--hq-radius);
+        box-shadow: var(--hq-shadow);
+        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
+
+    .filters input,
+    .filters select {
+        padding: 10px;
+        border-radius: var(--hq-radius);
+        border: 1px solid #d9dce3;
+        font-size: 14px;
+        outline: none;
+    }
+
+    /* Listings Grid */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .listing-card {
+        background: var(--hq-card);
+        padding: 20px;
+        border-radius: var(--hq-radius);
+        box-shadow: var(--hq-shadow);
+    }
+
+    .listing-card h2 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--hq-primary);
+    }
+
+    .price {
+        font-size: 18px;
+        font-weight: 600;
+        margin-top: 10px;
+        color: #2a2a2a;
+    }
+
+    .details {
+        margin-top: 10px;
+        color: var(--hq-muted);
+        line-height: 1.6;
+    }
+
+    .map-btn {
+        margin-top: 12px;
+        padding: 10px;
+        width: 100%;
+        background: var(--hq-primary);
+        color: white;
+        border: none;
+        border-radius: var(--hq-radius);
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .pagination button {
+        padding: 8px 14px;
+        margin: 4px;
+        border: none;
+        background: var(--hq-primary);
+        color: white;
+        border-radius: var(--hq-radius);
+        cursor: pointer;
+    }
+
+    /* Map Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        width: 90%;
+        max-width: 600px;
+        height: 400px;
+        background: white;
+        border-radius: var(--hq-radius);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .close-btn {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background: #e63946;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    
+.close-btn {
+    z-index: 9999;
+}
+.modal-content {
+    position: relative;
+}
+#map {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+.close-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #e63946;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 9999; /* ensures button stays above the map */
+}    
+</style>
+</head>
+
+<body>
+
+<h1>Selected Home Listings</h1>
+
+<div class="container">
+
+    <!-- Filters -->
+    <div class="filters">
+        <input type="text" id="search" placeholder="Search address..." oninput="applyFilters()">
+
+        <input type="number" id="minPrice" placeholder="Min Price" oninput="applyFilters()">
+        <input type="number" id="maxPrice" placeholder="Max Price" oninput="applyFilters()">
+
+        <select id="bedroomsFilter" onchange="applyFilters()">
+            <option value="">Bedrooms (Any)</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+        </select>
+
+        <select id="bathroomsFilter" onchange="applyFilters()">
+            <option value="">Bathrooms (Any)</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+        </select>
+
+        <select id="sort" onchange="applyFilters()">
+            <option value="">Sort By</option>
+            <option value="priceLow">Price: Low → High</option>
+            <option value="priceHigh">Price: High → Low</option>
+            <option value="bedrooms">Bedrooms</option>
+            <option value="bathrooms">Bathrooms</option>
+        </select>
+    </div>
+
+    <!-- Listings Grid -->
+    <div id="listingsGrid" class="grid"></div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="pagination"></div>
+
+    <a href="HomeQuestMain.html" class="back-btn">Back to HomeQuest Main</a>
+</div>
+
+<!-- Map Modal -->
+<div id="mapModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeMap()">Close</button>
+        <div id="map" style="width:100%; height:100%;"></div>
+    </div>
+</div>
+
+<script>
+let leafletMap = null;
+let allListings = [];
+let filteredListings = [];
+let currentPage = 1;
+const perPage = 6;
+
+async function loadListings() {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbzXmBpkojd0s9JFRoZ_ZbNjxQFyGkXpKwOiJOfcCqfF0JVjAd6sq6gipSRN8_EzjnSklA/exec?sheet=listings");
+    const data = await res.json();
+    allListings = data.listings;
+    applyFilters();
+}
+
+function applyFilters() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const minPrice = Number(document.getElementById("minPrice").value);
+    const maxPrice = Number(document.getElementById("maxPrice").value);
+    const bedrooms = document.getElementById("bedroomsFilter").value;
+    const bathrooms = document.getElementById("bathroomsFilter").value;
+    const sort = document.getElementById("sort").value;
+
+    filteredListings = allListings.filter(l => {
+        return (
+            l.address.toLowerCase().includes(search) &&
+            (!minPrice || Number(l.price) >= minPrice) &&
+            (!maxPrice || Number(l.price) <= maxPrice) &&
+            (!bedrooms || Number(l.bedrooms) >= bedrooms) &&
+            (!bathrooms || Number(l.bathrooms) >= bathrooms)
+        );
+    });
+
+    // Sorting
+    if (sort === "priceLow") filteredListings.sort((a,b)=>a.price-b.price);
+    if (sort === "priceHigh") filteredListings.sort((a,b)=>b.price-a.price);
+    if (sort === "bedrooms") filteredListings.sort((a,b)=>b.bedrooms-a.bedrooms);
+    if (sort === "bathrooms") filteredListings.sort((a,b)=>b.bathrooms-a.bathrooms);
+
+    currentPage = 1;
+    renderPage();
+}
+
+function renderPage() {
+    const grid = document.getElementById("listingsGrid");
+    const pagination = document.getElementById("pagination");
+
+    grid.innerHTML = "";
+    pagination.innerHTML = "";
+
+    const start = (currentPage - 1) * perPage;
+    const end = start + perPage;
+    const pageListings = filteredListings.slice(start, end);
+
+    pageListings.forEach(l => {
+        const card = document.createElement("div");
+        card.className = "listing-card";
+        card.innerHTML = `
+            <h2>${l.address}</h2>
+            <div class="price">$${Number(l.price).toLocaleString()}</div>
+            <div class="details">
+                <strong>Bedrooms:</strong> ${l.bedrooms}<br>
+                <strong>Bathrooms:</strong> ${l.bathrooms}<br>
+                <strong>Description:</strong> ${l.description}
+            </div>
+            <button class="map-btn" onclick="openMap('${l.address}')">View on Map</button>
+        `;
+        grid.appendChild(card);
+    });
+
+    // Pagination buttons
+    const totalPages = Math.ceil(filteredListings.length / perPage);
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => { currentPage = i; renderPage(); };
+        pagination.appendChild(btn);
+    }
+}
+
+function openMap(address) {
+    const modal = document.getElementById("mapModal");
+    modal.style.display = "flex";
+
+    // Free geocoding using Nominatim
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) return;
+
+            const lat = data[0].lat;
+            const lon = data[0].lon;
+
+            // Initialize Leaflet map
+            leafletMap = L.map('map').setView([lat, lon], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(leafletMap);
+
+            L.marker([lat, lon]).addTo(leafletMap)
+                .bindPopup(address)
+                .openPopup();
+        });
+}
+
+function closeMap() {
+    document.getElementById("mapModal").style.display = "none";
+
+    // Properly destroy Leaflet map instance
+    if (leafletMap !== null) {
+        leafletMap.remove();   // destroys map + event listeners
+        leafletMap = null;
+    }
+
+    // Reset map container
+    const mapDiv = document.getElementById("map");
+    mapDiv.innerHTML = "";
+}
+
+loadListings();
+</script>
+
+</body>
+</html>

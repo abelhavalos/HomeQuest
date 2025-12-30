@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeQuest Main</title>
+  <style>
+    :root {
+      --hq-primary: #4a6cf7;
+      --hq-bg: #f4f6fb;
+      --hq-card: #ffffff;
+      --hq-muted: #6b7280;
+      --hq-radius: 14px;
+      --hq-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background: var(--hq-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .main-card {
+      width: 420px;
+      background: var(--hq-card);
+      padding: 32px;
+      border-radius: var(--hq-radius);
+      box-shadow: var(--hq-shadow);
+      text-align: center;
+    }
+
+    .main-card h1 {
+      font-size: 28px;
+      color: var(--hq-primary);
+      margin-bottom: 6px;
+    }
+
+    .main-card p {
+      font-size: 15px;
+      color: var(--hq-muted);
+      margin-bottom: 24px;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border: 1px solid #d9dce3;
+      border-radius: var(--hq-radius);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .option:hover {
+      background: #eef1f9;
+    }
+
+    .option-icon {
+      font-size: 20px;
+      color: var(--hq-primary);
+    }
+
+    .option-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--hq-text);
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--hq-muted);
+    }
+
+    .footer input[type="checkbox"] {
+      margin-right: 6px;
+    }
+  
+.footer .btn {
+          width: 100%;
+        padding: 12px;
+        background: var(--hq-primary);
+        color: white;
+        border: none;
+        border-radius: var(--hq-radius);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.1s ease;
+
+}
+
+.footer .btn:hover {
+  background: #d62839;
+}
+  
+  .welcome {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--hq-primary);
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+  </style>
+</head>
+<body>
+
+<div class="main-card">
+  <h1>HomeQuest</h1>
+<p>The Home Buyer's Solution</p>
+<p class="welcome">Welcome, <span id="username"></span></p>
+  <div class="option" onclick="openGuide()">
+    <div class="option-icon">📘</div>
+    <div class="option-label">Guide for Prospective Buyers</div>
+  </div>
+
+  <div class="option" onclick="openListings()">
+    <div class="option-icon">🏡</div>
+    <div class="option-label">Selected Home Listings</div>
+  </div>
+
+  <div class="option" onclick="enterNewListing()">
+    <div class="option-icon">📝</div>
+    <div class="option-label">Enter New Home Listings</div>
+  </div>
+
+ <div class="footer">
+  <button class="btn" onclick="exitApp()">Exit HomeQuest</button>
+</div>
+
+<script>
+const user = localStorage.getItem("hqUser");
+  if (user) {
+    document.getElementById("username").textContent = user;
+  }
+function openGuide() {
+  alert("Opening Guide for Prospective Buyers...");
+  // Redirect or load guide content
+  window.location.href = "HomeQuestGuide.html";
+}
+
+function openListings() {
+  alert("Opening Selected Home Listings...");
+  // Redirect or load listings
+  window.location.href = "HomeQuestSelectedHomesList.html";
+}
+
+function enterNewListing() {
+  alert("Opening New Listing Entry...");
+  // Redirect or load entry form
+  window.location.href = "HomeQuestHomesList.html";
+}
+
+function exitApp() {
+  const confirmExit = confirm("Are you sure you want to exit HomeQuest?");
+
+  if (confirmExit) {
+    // Try to close if opened by script
+    window.close();
+
+    // Fallback for normal browser tabs
+    window.location.href = "about:blank";
+  }
+}
+</script>
+
+</body>
+</html>
