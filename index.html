@@ -314,27 +314,22 @@ async function register() {
     };
 
     try {
-        const res = await fetch(
+        await fetch(
             "https://script.google.com/macros/s/AKfycbzN9JXNgjC69AYb5xyl5wf9bHHvw4SJP0Y43CeZQJWphgjbmxTJXffN47zI1-CzwBE_nw/exec",
             {
                 method: "POST",
+                mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             }
         );
 
-        const data = await res.json();
         btn.classList.remove("loading");
 
-        if (data.result === "duplicate") {
-            showError(email, "This email is already registered");
-            return;
-        }
-
-        if (data.result === "success") {
-            alert("Account created!");
-            toggleForms();
-        }
+        // We cannot read the response in no-cors mode.
+        // So we assume success unless the request fails.
+        alert("Account created!");
+        toggleForms();
 
     } catch (err) {
         btn.classList.remove("loading");
