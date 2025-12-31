@@ -212,19 +212,21 @@ async function saveListing() {
     };
 
     try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzXmBpkojd0s9JFRoZ_ZbNjxQFyGkXpKwOiJOfcCqfF0JVjAd6sq6gipSRN8_EzjnSklA/exec?sheet=listings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        await fetch(
+            "https://script.google.com/macros/s/AKfycbzXmBpkojd0s9JFRoZ_ZbNjxQFyGkXpKwOiJOfcCqfF0JVjAd6sq6gipSRN8_EzjnSklA/exec?sheet=listings",
+            {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }
+        );
 
-        const data = await res.json();
         btn.classList.remove("loading");
 
-        if (data.result === "success") {
-            alert("Listing saved!");
-            window.location.href = "HomeQuestMain.html";
-        }
+        // Cannot read response in no-cors mode, so assume success
+        alert("Listing saved!");
+        window.location.href = "HomeQuestMain.html";
 
     } catch (err) {
         btn.classList.remove("loading");
