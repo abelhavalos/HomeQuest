@@ -263,7 +263,7 @@ async function login() {
 
         if (data.result === "success") {
             localStorage.setItem("hqUser", data.name);
-            alert("Welcome, " + data.name);
+            /*alert("Welcome, " + data.name);*/
             window.location.href = "HomeQuestMain.html";
         } else {
             showError(pass, "Incorrect email or password");
