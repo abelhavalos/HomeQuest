@@ -215,19 +215,16 @@
 
 </div>
 
-<script>
-    
 function toggleForms() {
     const login = document.getElementById("loginForm");
     const register = document.getElementById("registerForm");
 
-    if (login.style.display !== "none") {
-        login.style.display = "none";
-        register.style.display = "block";
-    } else {
-        register.style.display = "none";
-        login.style.display = "block";
-    }
+    const isLoginVisible = login.style.display !== "none";
+
+    login.style.display = isLoginVisible ? "none" : "block";
+    register.style.display = isLoginVisible ? "block" : "none";
+
+    clearErrors();
 }
 
 async function login() {
@@ -239,25 +236,33 @@ async function login() {
 
     let valid = true;
 
-    if (!email.value.includes("@")) showError(email, "Enter a valid email"), valid = false;
-    if (pass.value.trim() === "") showError(pass, "Password required"), valid = false;
+    if (!email.value.includes("@")) {
+        showError(email, "Enter a valid email");
+        valid = false;
+    }
+
+    if (pass.value.trim() === "") {
+        showError(pass, "Password required");
+        valid = false;
+    }
 
     if (!valid) return;
 
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbzSN_cJ3dAHk6ykwxRZhuNwF72oiBgBEycdeGys1leM0fU9l7Jnbf_HdbYXH02VTVVy/exec?email=${email.value}&password=${pass.value}`);
-        const data = await res.json();
+        const res = await fetch(
+            `https://script.google.com/macros/s/AKfycbzSN_cJ3dAHk6ykwxRZhuNwF72oiBgBEycdeGys1leM0fU9l7Jnbf_HdbYXH02VTVVy/exec?email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(pass.value)}`
+        );
 
+        const data = await res.json();
         btn.classList.remove("loading");
 
         if (data.result === "success") {
-    alert("Welcome, " + data.name);
-    window.location.href = "HomeQuestMain.html"; 
-     localStorage.setItem("hqUser", data.name);
-     window.location.href = "HomeQuestMain.html";}
-        else {
+            localStorage.setItem("hqUser", data.name);
+            alert("Welcome, " + data.name);
+            window.location.href = "HomeQuestMain.html";
+        } else {
             showError(pass, "Incorrect email or password");
         }
 
@@ -278,10 +283,25 @@ async function register() {
 
     let valid = true;
 
-    if (name.value.trim() === "") showError(name, "Name is required"), valid = false;
-    if (!email.value.includes("@")) showError(email, "Enter a valid email"), valid = false;
-    if (pass.value.length < 6) showError(pass, "Password must be at least 6 characters"), valid = false;
-    if (pass.value !== pass2.value) showError(pass2, "Passwords do not match"), valid = false;
+    if (name.value.trim() === "") {
+        showError(name, "Name is required");
+        valid = false;
+    }
+
+    if (!email.value.includes("@")) {
+        showError(email, "Enter a valid email");
+        valid = false;
+    }
+
+    if (pass.value.length < 6) {
+        showError(pass, "Password must be at least 6 characters");
+        valid = false;
+    }
+
+    if (pass.value !== pass2.value) {
+        showError(pass2, "Passwords do not match");
+        valid = false;
+    }
 
     if (!valid) return;
 
@@ -294,25 +314,27 @@ async function register() {
     };
 
     try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzSN_cJ3dAHk6ykwxRZhuNwF72oiBgBEycdeGys1leM0fU9l7Jnbf_HdbYXH02VTVVy/exec", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-});
+        const res = await fetch(
+            "https://script.google.com/macros/s/AKfycbzSN_cJ3dAHk6ykwxRZhuNwF72oiBgBEycdeGys1leM0fU9l7Jnbf_HdbYXH02VTVVy/exec",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }
+        );
 
-const data = await res.json();
+        const data = await res.json();
+        btn.classList.remove("loading");
 
-btn.classList.remove("loading");
+        if (data.result === "duplicate") {
+            showError(email, "This email is already registered");
+            return;
+        }
 
-if (data.result === "duplicate") {
-    showError(email, "This email is already registered");
-    return;
-}
-
-if (data.result === "success") {
-    alert("Account created!");
-    toggleForms();
-}
+        if (data.result === "success") {
+            alert("Account created!");
+            toggleForms();
+        }
 
     } catch (err) {
         btn.classList.remove("loading");
@@ -334,7 +356,6 @@ function clearErrors() {
     document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
     document.querySelectorAll(".error-text").forEach(el => el.remove());
 }
-</script>
 
 </body>
 </html>
