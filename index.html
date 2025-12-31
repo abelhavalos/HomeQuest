@@ -252,7 +252,7 @@ async function login() {
 
     try {
         const res = await fetch(
-            `https://script.google.com/macros/s/AKfycbyJoezzx86gBWTg6GrBeaWs-3BGfHiRQnKPxxX9tr5vevaR4O1GF5B71KGqNN2XwK4anA/exec?email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(pass.value)}`
+            `https://script.google.com/macros/s/AKfycbzN9JXNgjC69AYb5xyl5wf9bHHvw4SJP0Y43CeZQJWphgjbmxTJXffN47zI1-CzwBE_nw/exec?email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(pass.value)}`
         );
 
         const data = await res.json();
@@ -315,7 +315,7 @@ async function register() {
 
     try {
         const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbyJoezzx86gBWTg6GrBeaWs-3BGfHiRQnKPxxX9tr5vevaR4O1GF5B71KGqNN2XwK4anA/exec",
+            "https://script.google.com/macros/s/AKfycbzN9JXNgjC69AYb5xyl5wf9bHHvw4SJP0Y43CeZQJWphgjbmxTJXffN47zI1-CzwBE_nw/exec",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
