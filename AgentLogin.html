@@ -23,7 +23,7 @@
         background-position: center;
         margin: 0;
         font-family: "Inter", sans-serif;
-        /*background: var(--hq-bg);*/
+        /background: var(--hq-bg);/
         display: flex;
         justify-content: center;
         align-items: center;
@@ -94,7 +94,7 @@
     }
 
     #registerForm {
-        display: none; /* hidden until toggled */
+        display: none; / hidden until toggled /
     }
 
     .error {
@@ -197,7 +197,7 @@
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbycXVdc1K8vQH6FZhEG3GySo-k8SfxULW66eVxMSW5KHkx4p4HyK5cFdBt7f7VuB2szxA/exec"; // your URL
+const WEBAPPURL = "https://script.google.com/macros/s/AKfycbw_EwEpKXQ-6ckwQ1J0JZrfYB3kkHD6uu65nMeSlCnp2ttokFB_t5zsjWWtLMyZMfo/exec"; // your URL
 
 function toggleForms() {
     const login = document.getElementById("loginForm");
@@ -238,7 +238,7 @@ async function agentLogin() {
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(WEB_APP_URL, {
+        const res = await fetch(WEBAPPURL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -283,7 +283,7 @@ async function agentRegister() {
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(WEB_APP_URL, {
+        const res = await fetch(WEBAPPURL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
