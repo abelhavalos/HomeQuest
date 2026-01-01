@@ -132,6 +132,10 @@
         cursor: pointer;
     }
 
+    .pagination button.active {
+        background: #2d3fc7;
+    }
+
     /* Map Modal */
     .modal {
         display: none;
@@ -189,11 +193,11 @@
 
     <!-- Filters -->
     <div class="filters">
-        <input type="text" id="search" placeholder="Search address..." oninput="applyFilters()">
-        <input type="number" id="minPrice" placeholder="Min Price" oninput="applyFilters()">
-        <input type="number" id="maxPrice" placeholder="Max Price" oninput="applyFilters()">
+        <input type="text" id="search" placeholder="Search address..." oninput="onFiltersChanged()">
+        <input type="number" id="minPrice" placeholder="Min Price" oninput="onFiltersChanged()">
+        <input type="number" id="maxPrice" placeholder="Max Price" oninput="onFiltersChanged()">
 
-        <select id="bedroomsFilter" onchange="applyFilters()">
+        <select id="bedroomsFilter" onchange="onFiltersChanged()">
             <option value="">Bedrooms (Any)</option>
             <option value="1">1+</option>
             <option value="2">2+</option>
@@ -201,14 +205,14 @@
             <option value="4">4+</option>
         </select>
 
-        <select id="bathroomsFilter" onchange="applyFilters()">
+        <select id="bathroomsFilter" onchange="onFiltersChanged()">
             <option value="">Bathrooms (Any)</option>
             <option value="1">1+</option>
             <option value="2">2+</option>
             <option value="3">3+</option>
         </select>
 
-        <select id="sort" onchange="applyFilters()">
+        <select id="sort" onchange="onFiltersChanged()">
             <option value="">Sort By</option>
             <option value="priceLow">Price: Low → High</option>
             <option value="priceHigh">Price: High → Low</option>
@@ -235,122 +239,118 @@
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxI2qyH_xH7HEy6DPqDaUsejWnkiJxuwjYFEp85QmcMux_lzopv8ty6KhKFzffyp7xN/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIcCw57cZsZ8S6J1HrdejjvpViIEUfQ4Z2olRs1NsPuqRQ9kAXDoVN7Xft4YQc-e_XGQ/exec"; // replace with your updated /exec URL
 
 let leafletMap = null;
-let geoCache = {}; // speeds up map loading
-let allListings = [];
-let filteredListings = [];
+let geoCache = {};
 let currentPage = 1;
 const perPage = 6;
+let totalPages = 1;
 
-// Load listings from Apps Script
-async function loadListings() {
-    document.getElementById("listingsGrid").innerHTML = "<h3>Loading listings...</h3>";
+// Helper: collect filters from UI
+function getFiltersFromUI() {
+    return {
+        search: document.getElementById("search").value.trim(),
+        minPrice: document.getElementById("minPrice").value.trim(),
+        maxPrice: document.getElementById("maxPrice").value.trim(),
+        bedrooms: document.getElementById("bedroomsFilter").value.trim(),
+        bathrooms: document.getElementById("bathroomsFilter").value.trim(),
+        sort: document.getElementById("sort").value
+    };
+}
+
+function onFiltersChanged() {
+    currentPage = 1;
+    loadListingsPage(currentPage);
+}
+
+// Load one page from Apps Script
+async function loadListingsPage(page) {
+    const grid = document.getElementById("listingsGrid");
+    const pagination = document.getElementById("pagination");
+    grid.innerHTML = "<h3>Loading listings...</h3>";
+    pagination.innerHTML = "";
+
+    const filters = getFiltersFromUI();
 
     const res = await fetch(WEB_APP_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "getListings" })
+        body: JSON.stringify({
+            type: "getListingsPage",
+            page: page,
+            perPage: perPage,
+            filters: filters
+        })
     });
 
     const data = await res.json();
 
     if (data.result !== "success") {
-        alert("Error loading listings");
+        grid.innerHTML = "<h3>Error loading listings</h3>";
         return;
     }
 
-    // Normalize listing fields
-    allListings = data.listings.map(l => ({
-        address: l.address,
-        price: Number(l.price),
-        bedrooms: Number(l.beds),
-        bathrooms: Number(l.baths),
-        description: l.description,
-        agentName: l.agentName,
-        agentEmail: l.agentEmail,
-        agentLicense: l.agentLicense,
-        agentPhone: l.agentPhone
-    }));
+    currentPage = data.page;
+    totalPages = data.totalPages;
 
-    applyFilters();
+    renderListings(data.listings);
+    renderPagination();
 }
 
-function applyFilters() {
-    const search = document.getElementById("search").value.toLowerCase();
-    const minPrice = Number(document.getElementById("minPrice").value);
-    const maxPrice = Number(document.getElementById("maxPrice").value);
-    const bedrooms = Number(document.getElementById("bedroomsFilter").value);
-    const bathrooms = Number(document.getElementById("bathroomsFilter").value);
-    const sort = document.getElementById("sort").value;
-
-    filteredListings = allListings.filter(l => {
-        return (
-            l.address.toLowerCase().includes(search) &&
-            (!minPrice || l.price >= minPrice) &&
-            (!maxPrice || l.price <= maxPrice) &&
-            (!bedrooms || l.bedrooms >= bedrooms) &&
-            (!bathrooms || l.bathrooms >= bathrooms)
-        );
-    });
-
-    // Sorting
-    if (sort === "priceLow") filteredListings.sort((a,b)=>a.price-b.price);
-    if (sort === "priceHigh") filteredListings.sort((a,b)=>b.price-a.price);
-    if (sort === "bedrooms") filteredListings.sort((a,b)=>b.bedrooms-a.bedrooms);
-    if (sort === "bathrooms") filteredListings.sort((a,b)=>b.bathrooms-a.bathrooms);
-
-    currentPage = 1;
-    renderPage();
-}
-
-function renderPage() {
+function renderListings(listings) {
     const grid = document.getElementById("listingsGrid");
-    const pagination = document.getElementById("pagination");
+    if (!listings.length) {
+        grid.innerHTML = "<h3>No listings found.</h3>";
+        return;
+    }
 
     let html = "";
-    const start = (currentPage - 1) * perPage;
-    const end = start + perPage;
-    const pageListings = filteredListings.slice(start, end);
-
-    pageListings.forEach(l => {
+    listings.forEach(l => {
+        const price = Number(l.price) || 0;
+        const beds = Number(l.beds) || 0;
+        const baths = Number(l.baths) || 0;
         html += `
             <div class="listing-card">
                 <h2>${l.address}</h2>
-                <div class="price">$${l.price.toLocaleString()}</div>
+                <div class="price">$${price.toLocaleString()}</div>
                 <div class="details">
-                    <strong>Bedrooms:</strong> ${l.bedrooms}<br>
-                    <strong>Bathrooms:</strong> ${l.bathrooms}<br>
-                    <strong>Description:</strong> ${l.description}
+                    <strong>Bedrooms:</strong> ${beds}<br>
+                    <strong>Bathrooms:</strong> ${baths}<br>
+                    <strong>Description:</strong> ${l.description || "" }
                 </div>
 
                 <div class="agent-box">
                     <strong>Listed By:</strong><br>
-                    ${l.agentName}<br>
-                    ${l.agentEmail}<br>
-                    License: ${l.agentLicense}<br>
-                    Phone: ${l.agentPhone}
+                    ${l.agentName || ""}<br>
+                    ${l.agentEmail || ""}<br>
+                    License: ${l.agentLicense || ""}<br>
+                    Phone: ${l.agentPhone || ""}
                 </div>
 
-                <button class="map-btn" onclick="openMap('${l.address}')">View on Map</button>
+                <button class="map-btn" onclick="openMap('${l.address.replace(/'/g, "\\'")}')">View on Map</button>
             </div>
         `;
     });
 
     grid.innerHTML = html;
+}
 
-    // Pagination
+function renderPagination() {
+    const pagination = document.getElementById("pagination");
     pagination.innerHTML = "";
-    const totalPages = Math.ceil(filteredListings.length / perPage);
+
+    if (totalPages <= 1) return;
+
     for (let i = 1; i <= totalPages; i++) {
-        pagination.innerHTML += `<button onclick="goToPage(${i})">${i}</button>`;
+        const activeClass = i === currentPage ? "active" : "";
+        pagination.innerHTML += `<button class="${activeClass}" onclick="goToPage(${i})">${i}</button>`;
     }
 }
 
 function goToPage(page) {
     currentPage = page;
-    renderPage();
+    loadListingsPage(currentPage);
 }
 
 async function openMap(address) {
@@ -360,6 +360,7 @@ async function openMap(address) {
     if (!geoCache[address]) {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
         const data = await res.json();
+        if (!data.length) return;
         geoCache[address] = data[0];
     }
 
@@ -387,7 +388,8 @@ function closeMap() {
     document.getElementById("map").innerHTML = "";
 }
 
-loadListings();
+// Initial load
+loadListingsPage(currentPage);
 </script>
 
 </body>
