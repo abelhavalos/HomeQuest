@@ -239,7 +239,7 @@
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIcCw57cZsZ8S6J1HrdejjvpViIEUfQ4Z2olRs1NsPuqRQ9kAXDoVN7Xft4YQc-e_XGQ/exec"; // replace with your updated /exec URL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIcCw57cZsZ8S6J1HrdejjvpViIEUfQ4Z2olRs1NsPuqRQ9kAXDoVN7Xft4YQc-e_XGQ/exec"; // your deployed Web App URL
 
 let leafletMap = null;
 let geoCache = {};
@@ -247,7 +247,7 @@ let currentPage = 1;
 const perPage = 6;
 let totalPages = 1;
 
-// Helper: collect filters from UI
+// Collect filters from UI
 function getFiltersFromUI() {
     return {
         search: document.getElementById("search").value.trim(),
@@ -264,7 +264,7 @@ function onFiltersChanged() {
     loadListingsPage(currentPage);
 }
 
-// Load one page from Apps Script
+// Load listings via GET (safe from CORS)
 async function loadListingsPage(page) {
     const grid = document.getElementById("listingsGrid");
     const pagination = document.getElementById("pagination");
@@ -273,29 +273,25 @@ async function loadListingsPage(page) {
 
     const filters = getFiltersFromUI();
 
-    const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            type: "getListingsPage",
-            page: page,
-            perPage: perPage,
-            filters: filters
-        })
-    });
+    try {
+        const url = `${WEB_APP_URL}?type=getListingsPage&page=${page}&perPage=${perPage}&search=${encodeURIComponent(filters.search)}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}&bedrooms=${filters.bedrooms}&bathrooms=${filters.bathrooms}&sort=${filters.sort}`;
 
-    const data = await res.json();
+        const res = await fetch(url); // GET request
+        const data = await res.json();
 
-    if (data.result !== "success") {
-        grid.innerHTML = "<h3>Error loading listings</h3>";
-        return;
+        if (data.result !== "success") {
+            grid.innerHTML = "<h3>Error loading listings</h3>";
+            return;
+        }
+
+        currentPage = data.page;
+        totalPages = data.totalPages;
+
+        renderListings(data.listings);
+        renderPagination();
+    } catch (err) {
+        grid.innerHTML = "<h3>Failed to fetch listings</h3>";
     }
-
-    currentPage = data.page;
-    totalPages = data.totalPages;
-
-    renderListings(data.listings);
-    renderPagination();
 }
 
 function renderListings(listings) {
@@ -317,7 +313,7 @@ function renderListings(listings) {
                 <div class="details">
                     <strong>Bedrooms:</strong> ${beds}<br>
                     <strong>Bathrooms:</strong> ${baths}<br>
-                    <strong>Description:</strong> ${l.description || "" }
+                    <strong>Description:</strong> ${l.description || ""}
                 </div>
 
                 <div class="agent-box">
