@@ -308,7 +308,7 @@ function renderListings(listings) {
         const baths = Number(l.baths) || 0;
         html += `
             <div class="listing-card">
-                <h2>${l.address}</h2>
+                <h2>${l.id || l.address}</h2>
                 <div class="price">$${price.toLocaleString()}</div>
                 <div class="details">
                     <strong>Bedrooms:</strong> ${beds}<br>
@@ -324,7 +324,7 @@ function renderListings(listings) {
                     Phone: ${l.agentPhone || ""}
                 </div>
 
-                <button class="map-btn" onclick="openMap('${l.address.replace(/'/g, "\\'")}')">View on Map</button>
+                <button class="map-btn" onclick="openMap('${(l.address || l.id || "").replace(/'/g, "\\'")}')">View on Map</button>
             </div>
         `;
     });
@@ -387,6 +387,5 @@ function closeMap() {
 // Initial load
 loadListingsPage(currentPage);
 </script>
-
 </body>
 </html>
