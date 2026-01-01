@@ -273,27 +273,31 @@ async function loadListingsPage(page) {
 
     const filters = getFiltersFromUI();
 
-    try {
-        const res = await fetch(
-            `${WEB_APP_URL}?type=getListingsPage&page=${page}&perPage=${perPage}&search=${encodeURIComponent(filters.search)}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}&bedrooms=${filters.bedrooms}&bathrooms=${filters.bathrooms}&sort=${filters.sort}`
-        );
+    const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            type: "getListingsPage",
+            page: page,
+            perPage: perPage,
+            filters: filters
+        })
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        if (data.result !== "success") {
-            grid.innerHTML = "<h3>Error loading listings</h3>";
-            return;
-        }
-
-        currentPage = data.page;
-        totalPages = data.totalPages;
-
-        renderListings(data.listings);
-        renderPagination();
-    } catch (err) {
-        grid.innerHTML = "<h3>Failed to fetch listings</h3>";
+    if (data.result !== "success") {
+        grid.innerHTML = "<h3>Error loading listings</h3>";
+        return;
     }
+
+    currentPage = data.page;
+    totalPages = data.totalPages;
+
+    renderListings(data.listings);
+    renderPagination();
 }
+
 function renderListings(listings) {
     const grid = document.getElementById("listingsGrid");
     if (!listings.length) {
