@@ -120,17 +120,17 @@
 <p class="welcome">Welcome, <span id="username"></span></p>
   <div class="option" onclick="openGuide()">
     <div class="option-icon">📘</div>
-    <div class="option-label">Guide for Prospective Buyers</div>
+    <div class="option-label">Buyers Guide</div>
   </div>
 
   <div class="option" onclick="openListings()">
     <div class="option-icon">🏡</div>
-    <div class="option-label">Selected Home Listings</div>
+    <div class="option-label">Home Listings</div>
   </div>
 
-  <div class="option" onclick="enterNewListing()">
+  <div class="option" onclick="agentsAccess()">
     <div class="option-icon">📝</div>
-    <div class="option-label">Enter New Home Listings</div>
+    <div class="option-label">Agents Access</div>
   </div>
 
  <div class="footer">
@@ -154,10 +154,10 @@ function openListings() {
   window.location.href = "HomeQuestSelectedHomesList.html";
 }
 
-function enterNewListing() {
+function agentsAccess() {
   /*alert("Opening New Listing Entry...");*/
   // Redirect or load entry form
-  window.location.href = "HomeQuestHomesList.html";
+  window.location.href = "AgentLogin.html";
 }
 
 function exitApp() {

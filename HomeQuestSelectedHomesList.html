@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Selected Home Listings</title>
 
-<!-- Leaflet (FREE Map API) -->
+<!-- Leaflet Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -20,27 +20,25 @@
     }
 
     body {
-        background-image: url('HomeQuestBackground.jpeg'); 
-        background-size: cover; 
-        background-position: center;"
+        background-image: url('HomeQuestBackground.jpeg');
+        background-size: cover;
+        background-position: center;
         margin: 0;
         font-family: "Inter", sans-serif;
-        /*background: var(--hq-bg);*/
         display: flex;
         justify-content: center;
-        align-items: center;
-        height: 100vh;
+        padding: 40px 0;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1100px;
     }
 
     h1 {
         text-align: center;
         color: var(--hq-primary);
         margin-bottom: 20px;
-    }
-
-    .container {
-        max-width: 1000px;
-        margin: auto;
     }
 
     /* Filters */
@@ -95,6 +93,15 @@
         margin-top: 10px;
         color: var(--hq-muted);
         line-height: 1.6;
+    }
+
+    .agent-box {
+        margin-top: 12px;
+        padding: 10px;
+        background: #eef2ff;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #333;
     }
 
     .map-btn {
@@ -155,43 +162,34 @@
         padding: 6px 10px;
         border-radius: 6px;
         cursor: pointer;
+        z-index: 9999;
     }
-    
-.close-btn {
-    z-index: 9999;
-}
-.modal-content {
-    position: relative;
-}
-#map {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-}
-.close-btn {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    background: #e63946;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    z-index: 9999; /* ensures button stays above the map */
-}    
+
+    #map {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .back-btn {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: var(--hq-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
 </style>
 </head>
 
 <body>
-    
 
 <div class="container">
-<h1>Selected Home Listings</h1>
+    <h1>Selected Home Listings</h1>
+
     <!-- Filters -->
     <div class="filters">
         <input type="text" id="search" placeholder="Search address..." oninput="applyFilters()">
-
         <input type="number" id="minPrice" placeholder="Min Price" oninput="applyFilters()">
         <input type="number" id="maxPrice" placeholder="Max Price" oninput="applyFilters()">
 
@@ -232,21 +230,50 @@
 <div id="mapModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeMap()">Close</button>
-        <div id="map" style="width:100%; height:100%;"></div>
+        <div id="map"></div>
     </div>
 </div>
 
 <script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxI2qyH_xH7HEy6DPqDaUsejWnkiJxuwjYFEp85QmcMux_lzopv8ty6KhKFzffyp7xN/exec";
+
 let leafletMap = null;
+let geoCache = {}; // speeds up map loading
 let allListings = [];
 let filteredListings = [];
 let currentPage = 1;
 const perPage = 6;
 
+// Load listings from Apps Script
 async function loadListings() {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbzXmBpkojd0s9JFRoZ_ZbNjxQFyGkXpKwOiJOfcCqfF0JVjAd6sq6gipSRN8_EzjnSklA/exec?sheet=listings");
+    document.getElementById("listingsGrid").innerHTML = "<h3>Loading listings...</h3>";
+
+    const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "getListings" })
+    });
+
     const data = await res.json();
-    allListings = data.listings;
+
+    if (data.result !== "success") {
+        alert("Error loading listings");
+        return;
+    }
+
+    // Normalize listing fields
+    allListings = data.listings.map(l => ({
+        address: l.address,
+        price: Number(l.price),
+        bedrooms: Number(l.beds),
+        bathrooms: Number(l.baths),
+        description: l.description,
+        agentName: l.agentName,
+        agentEmail: l.agentEmail,
+        agentLicense: l.agentLicense,
+        agentPhone: l.agentPhone
+    }));
+
     applyFilters();
 }
 
@@ -254,17 +281,17 @@ function applyFilters() {
     const search = document.getElementById("search").value.toLowerCase();
     const minPrice = Number(document.getElementById("minPrice").value);
     const maxPrice = Number(document.getElementById("maxPrice").value);
-    const bedrooms = document.getElementById("bedroomsFilter").value;
-    const bathrooms = document.getElementById("bathroomsFilter").value;
+    const bedrooms = Number(document.getElementById("bedroomsFilter").value);
+    const bathrooms = Number(document.getElementById("bathroomsFilter").value);
     const sort = document.getElementById("sort").value;
 
     filteredListings = allListings.filter(l => {
         return (
             l.address.toLowerCase().includes(search) &&
-            (!minPrice || Number(l.price) >= minPrice) &&
-            (!maxPrice || Number(l.price) <= maxPrice) &&
-            (!bedrooms || Number(l.bedrooms) >= bedrooms) &&
-            (!bathrooms || Number(l.bathrooms) >= bathrooms)
+            (!minPrice || l.price >= minPrice) &&
+            (!maxPrice || l.price <= maxPrice) &&
+            (!bedrooms || l.bedrooms >= bedrooms) &&
+            (!bathrooms || l.bathrooms >= bathrooms)
         );
     });
 
@@ -282,77 +309,82 @@ function renderPage() {
     const grid = document.getElementById("listingsGrid");
     const pagination = document.getElementById("pagination");
 
-    grid.innerHTML = "";
-    pagination.innerHTML = "";
-
+    let html = "";
     const start = (currentPage - 1) * perPage;
     const end = start + perPage;
     const pageListings = filteredListings.slice(start, end);
 
     pageListings.forEach(l => {
-        const card = document.createElement("div");
-        card.className = "listing-card";
-        card.innerHTML = `
-            <h2>${l.address}</h2>
-            <div class="price">$${Number(l.price).toLocaleString()}</div>
-            <div class="details">
-                <strong>Bedrooms:</strong> ${l.bedrooms}<br>
-                <strong>Bathrooms:</strong> ${l.bathrooms}<br>
-                <strong>Description:</strong> ${l.description}
+        html += `
+            <div class="listing-card">
+                <h2>${l.address}</h2>
+                <div class="price">$${l.price.toLocaleString()}</div>
+                <div class="details">
+                    <strong>Bedrooms:</strong> ${l.bedrooms}<br>
+                    <strong>Bathrooms:</strong> ${l.bathrooms}<br>
+                    <strong>Description:</strong> ${l.description}
+                </div>
+
+                <div class="agent-box">
+                    <strong>Listed By:</strong><br>
+                    ${l.agentName}<br>
+                    ${l.agentEmail}<br>
+                    License: ${l.agentLicense}<br>
+                    Phone: ${l.agentPhone}
+                </div>
+
+                <button class="map-btn" onclick="openMap('${l.address}')">View on Map</button>
             </div>
-            <button class="map-btn" onclick="openMap('${l.address}')">View on Map</button>
         `;
-        grid.appendChild(card);
     });
 
-    // Pagination buttons
+    grid.innerHTML = html;
+
+    // Pagination
+    pagination.innerHTML = "";
     const totalPages = Math.ceil(filteredListings.length / perPage);
     for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.onclick = () => { currentPage = i; renderPage(); };
-        pagination.appendChild(btn);
+        pagination.innerHTML += `<button onclick="goToPage(${i})">${i}</button>`;
     }
 }
 
-function openMap(address) {
+function goToPage(page) {
+    currentPage = page;
+    renderPage();
+}
+
+async function openMap(address) {
     const modal = document.getElementById("mapModal");
     modal.style.display = "flex";
 
-    // Free geocoding using Nominatim
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.length === 0) return;
+    if (!geoCache[address]) {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await res.json();
+        geoCache[address] = data[0];
+    }
 
-            const lat = data[0].lat;
-            const lon = data[0].lon;
+    const { lat, lon } = geoCache[address];
 
-            // Initialize Leaflet map
-            leafletMap = L.map('map').setView([lat, lon], 15);
+    leafletMap = L.map('map').setView([lat, lon], 15);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-            }).addTo(leafletMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(leafletMap);
 
-            L.marker([lat, lon]).addTo(leafletMap)
-                .bindPopup(address)
-                .openPopup();
-        });
+    L.marker([lat, lon]).addTo(leafletMap)
+        .bindPopup(address)
+        .openPopup();
 }
 
 function closeMap() {
     document.getElementById("mapModal").style.display = "none";
 
-    // Properly destroy Leaflet map instance
     if (leafletMap !== null) {
-        leafletMap.remove();   // destroys map + event listeners
+        leafletMap.remove();
         leafletMap = null;
     }
 
-    // Reset map container
-    const mapDiv = document.getElementById("map");
-    mapDiv.innerHTML = "";
+    document.getElementById("map").innerHTML = "";
 }
 
 loadListings();

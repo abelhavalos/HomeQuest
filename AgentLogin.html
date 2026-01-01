@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HomeQuest Agent Access</title>
+
+<style>
+    :root {
+        --hq-primary: #4a6cf7;
+        --hq-bg: #f4f6fb;
+        --hq-card-bg: #ffffff;
+        --hq-border: #d9dce3;
+        --hq-text: #1e1e2d;
+        --hq-muted: #6b7280;
+        --hq-radius: 14px;
+        --hq-shadow: 0 0px 10px rgba(0,0,0,0.06);
+    }
+
+    body {
+        background-image: url('HomeQuestBackground.jpeg'); 
+        background-size: cover; 
+        background-position: center;
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        /*background: var(--hq-bg);*/
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-card {
+        width: 380px;
+        background: var(--hq-card-bg);
+        padding: 32px;
+        border-radius: var(--hq-radius);
+        box-shadow: var(--hq-shadow);
+        border: 1px solid var(--hq-border);
+    }
+
+    .logo {
+        text-align: center;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--hq-primary);
+        margin-bottom: 24px;
+    }
+
+    .input-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        font-size: 14px;
+        color: var(--hq-muted);
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: var(--hq-radius);
+        border: 1px solid var(--hq-border);
+        font-size: 15px;
+        outline: none;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px;
+        background: var(--hq-primary);
+        color: white;
+        border: none;
+        border-radius: var(--hq-radius);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .footer {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 14px;
+        color: var(--hq-muted);
+    }
+
+    .footer a {
+        color: var(--hq-primary);
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    #registerForm {
+        display: none; /* hidden until toggled */
+    }
+
+    .error {
+        border-color: #e63946 !important;
+    }
+
+    .error-text {
+        color: #e63946;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
+    .btn.loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn.loading::after {
+        content: "";
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 16px;
+        height: 16px;
+        border: 3px solid white;
+        border-top-color: transparent;
+        border-radius: 50%;
+        transform: translateY(-50%);
+        animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: translateY(-50%) rotate(0deg); }
+        to { transform: translateY(-50%) rotate(360deg); }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="logo">Agent Access</div>
+
+    <!-- 🔑 AGENT LOGIN FORM -->
+    <div id="loginForm">
+        <div class="input-group">
+            <label for="agentEmail">Email</label>
+            <input id="agentEmail" type="email" placeholder="agent@example.com" />
+        </div>
+
+        <div class="input-group">
+            <label for="agentPass">Password</label>
+            <input id="agentPass" type="password" placeholder="••••••••" />
+        </div>
+
+        <button class="btn" onclick="agentLogin()">Sign In</button>
+
+        <div class="footer">
+            <a onclick="toggleForms()">Create an Agent Account</a><br><br>
+            <a href="HomeQuestMain.html">Back to HomeQuest Main</a>
+        </div>
+    </div>
+
+    <!-- 🆕 CREATE AGENT ACCOUNT FORM -->
+    <div id="registerForm">
+        <div class="input-group">
+            <label for="regName">Full Name</label>
+            <input id="regName" type="text" placeholder="John Doe" />
+        </div>
+
+        <div class="input-group">
+            <label for="regEmail">Email</label>
+            <input id="regEmail" type="email" placeholder="agent@example.com" />
+        </div>
+
+        <div class="input-group">
+            <label for="regPass">Password</label>
+            <input id="regPass" type="password" placeholder="••••••••" />
+        </div>
+
+        <div class="input-group">
+            <label for="regLicense">License Number</label>
+            <input id="regLicense" type="text" placeholder="CA-123456" />
+        </div>
+
+        <div class="input-group">
+            <label for="regPhone">Phone Number</label>
+            <input id="regPhone" type="text" placeholder="555-1234" />
+        </div>
+
+        <button class="btn" onclick="agentRegister()">Create Account</button>
+
+        <div class="footer">
+            <a onclick="toggleForms()">Back to login</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwM2UA-n6K7iM4aWnUy3WZcv-UkFiJImrOxfhXtbCigRbpul2vEa5JvNVdTyZCrmEQu/exec"; // your URL
+
+function toggleForms() {
+    const login = document.getElementById("loginForm");
+    const register = document.getElementById("registerForm");
+
+    if (login.style.display === "none") {
+        login.style.display = "block";
+        register.style.display = "none";
+    } else {
+        login.style.display = "none";
+        register.style.display = "block";
+    }
+}
+
+function showError(input, message) {
+    input.classList.add("error");
+    const msg = document.createElement("div");
+    msg.className = "error-text";
+    msg.innerText = message;
+    input.parentElement.appendChild(msg);
+}
+
+function clearErrors() {
+    document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
+    document.querySelectorAll(".error-text").forEach(el => el.remove());
+}
+
+async function agentLogin() {
+    const email = document.getElementById("agentEmail");
+    const pass = document.getElementById("agentPass");
+    const btn = document.querySelector("#loginForm .btn");
+
+    clearErrors();
+
+    if (!email.value.includes("@")) return showError(email, "Enter a valid email");
+    if (pass.value.trim() === "") return showError(pass, "Password required");
+
+    btn.classList.add("loading");
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "agentLogin",
+                email: email.value.trim(),
+                password: pass.value.trim()
+            })
+        });
+
+        const data = await res.json();
+        btn.classList.remove("loading");
+
+        if (data.result === "success") {
+            localStorage.setItem("hqAgent", JSON.stringify(data));
+            window.location.href = "HomeQuestHomesList.html";
+        } else {
+            showError(pass, "Incorrect email or password");
+        }
+
+    } catch (err) {
+        btn.classList.remove("loading");
+        alert("Login error.");
+    }
+}
+
+async function agentRegister() {
+    const name = document.getElementById("regName");
+    const email = document.getElementById("regEmail");
+    const pass = document.getElementById("regPass");
+    const license = document.getElementById("regLicense");
+    const phone = document.getElementById("regPhone");
+    const btn = document.querySelector("#registerForm .btn");
+
+    clearErrors();
+
+    if (name.value.trim() === "") return showError(name, "Name required");
+    if (!email.value.includes("@")) return showError(email, "Enter a valid email");
+    if (pass.value.length < 6) return showError(pass, "Min 6 characters");
+    if (license.value.trim() === "") return showError(license, "License required");
+    if (phone.value.trim() === "") return showError(phone, "Phone required");
+
+    btn.classList.add("loading");
+
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "agentRegister",
+                name: name.value.trim(),
+                email: email.value.trim(),
+                password: pass.value.trim(),
+                license: license.value.trim(),
+                phone: phone.value.trim()
+            })
+        });
+
+        const data = await res.json();
+        btn.classList.remove("loading");
+
+        if (data.result === "duplicate") {
+            showError(email, "This email is already registered");
+            return;
+        }
+
+        if (data.result === "success") {
+            alert("Agent account created!");
+            toggleForms();
+        }
+
+    } catch (err) {
+        btn.classList.remove("loading");
+        alert("Registration error.",err);
+    }
+}
+</script>
+
+</body>
+</html>

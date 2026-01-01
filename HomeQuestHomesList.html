@@ -1,24 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Enter New Home Listing</title>
+<meta charset="UTF-8">
+<title>New Listing</title>
 
 <style>
-    :root {
-        --hq-primary: #4a6cf7;
-        --hq-bg: #f4f6fb;
-        --hq-card: #ffffff;
-        --hq-muted: #6b7280;
-        --hq-radius: 14px;
-        --hq-shadow: 0 8px 20px rgba(0,0,0,0.06);
-    }
-
     body {
         background-image: url('HomeQuestBackground.jpeg'); 
         background-size: cover; 
-        background-position: center;"
+        background-position: center;
         margin: 0;
         font-family: "Inter", sans-serif;
         /*background: var(--hq-bg);*/
@@ -27,214 +17,86 @@
         align-items: center;
         height: 100vh;
     }
-
-    .form-card {
-        width: 420px;
-        background: var(--hq-card);
-        padding: 28px;
-        border-radius: var(--hq-radius);
-        box-shadow: var(--hq-shadow);
-    }
-
-    h1 {
-        text-align: center;
-        color: var(--hq-primary);
-        margin-bottom: 20px;
-    }
-
-    .input-group {
-        margin-bottom: 18px;
-    }
-
-    label {
-        display: block;
-        font-size: 14px;
-        color: var(--hq-muted);
-        margin-bottom: 6px;
-    }
-
-    input, textarea {
-        width: 100%;
-        padding: 12px;
-        border-radius: var(--hq-radius);
-        border: 1px solid #d9dce3;
-        font-size: 15px;
-        outline: none;
-        transition: border 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    input:focus, textarea:focus {
-        border-color: var(--hq-primary);
-        box-shadow: 0 0 0 3px rgba(74,108,247,0.15);
-    }
-
-    textarea {
-        resize: vertical;
-        height: 90px;
-    }
-
-    .btn {
-        width: 100%;
-        padding: 12px;
-        background: var(--hq-primary);
-        color: white;
-        border: none;
-        border-radius: var(--hq-radius);
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-
-    .btn:hover {
-        background: #3f5be0;
-    }
-
-    .btn.loading {
-        position: relative;
-        pointer-events: none;
-        opacity: 0.7;
-    }
-
-    .btn.loading::after {
-        content: "";
-        position: absolute;
-        right: 16px;
-        top: 50%;
-        width: 16px;
-        height: 16px;
-        border: 3px solid white;
-        border-top-color: transparent;
-        border-radius: 50%;
-        transform: translateY(-50%);
-        animation: spin 0.7s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: translateY(-50%) rotate(0deg); }
-        to { transform: translateY(-50%) rotate(360deg); }
-    }
-
-    .error {
-        border-color: #e63946 !important;
-        box-shadow: 0 0 0 3px rgba(230,57,70,0.15) !important;
-    }
-
-    .error-text {
-        color: #e63946;
-        font-size: 13px;
-        margin-top: 4px;
-    }
-
-    .back-link {
-        display: block;
-        text-align: center;
-        margin-top: 20px;
-        color: var(--hq-primary);
-        font-weight: 500;
-        text-decoration: none;
-    }
+    .card { width: 420px; background: white; padding: 28px; border-radius: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.08); }
+    .card a {color:  #4a6cf7;text-decoration: none;font-weight: 500;cursor: pointer;}
+     h1 { text-align: center; color: #4a6cf7; }
+    .input-group { margin-bottom: 16px; }
+    label { font-size: 14px; color: #555; }
+    input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; }
+    button { width: 100%; padding: 12px; background: #4a6cf7; color: white; border: none; border-radius: 10px; cursor: pointer; }
 </style>
 </head>
 
 <body>
 
-<div class="form-card">
-    <h1>New Home Listing</h1>
+<div class="card">
+    <h1>Enter New Listing</h1>
 
     <div class="input-group">
         <label>Address</label>
-        <input id="address" type="text" placeholder="123 Main St" />
+        <input id="address" type="text">
     </div>
 
     <div class="input-group">
-        <label>Price ($)</label>
-        <input id="price" type="number" placeholder="350000" />
+        <label>Price</label>
+        <input id="price" type="number">
     </div>
 
     <div class="input-group">
         <label>Bedrooms</label>
-        <input id="bedrooms" type="number" placeholder="3" />
+        <input id="beds" type="number">
     </div>
 
     <div class="input-group">
         <label>Bathrooms</label>
-        <input id="bathrooms" type="number" placeholder="2" />
+        <input id="baths" type="number">
     </div>
 
     <div class="input-group">
         <label>Description</label>
-        <textarea id="description" placeholder="Describe the property..."></textarea>
+        <textarea id="description"></textarea>
     </div>
 
-    <button class="btn" onclick="saveListing()">Save Listing</button>
-
-    <a href="HomeQuestMain.html" class="back-link">Back to HomeQuest Main</a>
+    <button onclick="saveListing()">Save Listing</button><br><br>
+     <a href="HomeQuestMain.html"><center>Back to HomeQuest Main</center></a>
 </div>
 
 <script>
-function showError(input, message) {
-    input.classList.add("error");
-    const msg = document.createElement("div");
-    msg.className = "error-text";
-    msg.innerText = message;
-    input.parentElement.appendChild(msg);
-}
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxI2qyH_xH7HEy6DPqDaUsejWnkiJxuwjYFEp85QmcMux_lzopv8ty6KhKFzffyp7xN/exec";
 
-function clearErrors() {
-    document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
-    document.querySelectorAll(".error-text").forEach(el => el.remove());
-}
+// Protect page
+const agent = JSON.parse(localStorage.getItem("hqAgent"));
+if (!agent) window.location.href = "AgentLogin.html";
 
 async function saveListing() {
-    const address = document.getElementById("address");
-    const price = document.getElementById("price");
-    const bedrooms = document.getElementById("bedrooms");
-    const bathrooms = document.getElementById("bathrooms");
-    const description = document.getElementById("description");
-    const btn = document.querySelector(".btn");
-
-    clearErrors();
-
-    let valid = true;
-
-    if (address.value.trim() === "") showError(address, "Address required"), valid = false;
-    if (price.value.trim() === "") showError(price, "Price required"), valid = false;
-    if (bedrooms.value.trim() === "") showError(bedrooms, "Bedrooms required"), valid = false;
-    if (bathrooms.value.trim() === "") showError(bathrooms, "Bathrooms required"), valid = false;
-
-    if (!valid) return;
-
-    btn.classList.add("loading");
-
     const payload = {
-        address: address.value.trim(),
-        price: price.value.trim(),
-        bedrooms: bedrooms.value.trim(),
-        bathrooms: bathrooms.value.trim(),
-        description: description.value.trim()
+        type: "newListing",
+        listingId: "HQ-" + Date.now(),
+        address: document.getElementById("address").value.trim(),
+        price: document.getElementById("price").value.trim(),
+        beds: document.getElementById("beds").value.trim(),
+        baths: document.getElementById("baths").value.trim(),
+        description: document.getElementById("description").value.trim(),
+
+        agentName: agent.name,
+        agentEmail: agent.email,
+        agentLicense: agent.license,
+        agentPhone: agent.phone
     };
 
-    try {
-        await fetch(
-            "https://script.google.com/macros/s/AKfycbwegAcf3Fcen68yoRULdLAX7u3eqPmjlMyRHjfBWxPQ1y3DRYM7ZMPu5dfdn1KdGkrCNA/exec?sheet=listings",
-            {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            }
-        );
+    const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
 
-        btn.classList.remove("loading");
+    const data = await res.json();
 
-        // Cannot read response in no-cors mode, so assume success
+    if (data.result === "success") {
         alert("Listing saved!");
         window.location.href = "HomeQuestMain.html";
-
-    } catch (err) {
-        btn.classList.remove("loading");
-        alert("Error saving listing.");
+    } else {
+        alert("Error saving listing");
     }
 }
 </script>
