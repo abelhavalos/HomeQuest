@@ -62,9 +62,9 @@
 </div>
 
 <script>
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxP1yAmI8FueCW9ldka2I1cnSWJmrvHcvFeXn5tnOLhLI0uWbu1IEVNV8TbSCr5LSYf/exec";
 
-// Protect page — require logged‑in agent
 const agent = JSON.parse(localStorage.getItem("hqAgent"));
 if (!agent) window.location.href = "AgentLogin.html";
 
@@ -75,53 +75,40 @@ async function saveListing() {
     const baths = document.getElementById("baths").value.trim();
     const description = document.getElementById("description").value.trim();
 
-    // Basic validation
     if (!address || !price || !beds || !baths) {
         alert("Please fill in all required fields.");
         return;
     }
 
-    const payload = {
-        // 👇 match Apps Script: listingID (capital D)
-        listingID: "HQ-" + Date.now(),
-        address: address,
-        price: price,
-        beds: beds,
-        baths: baths,
-        description: description,
-
-        agentName: agent.name,
-        agentEmail: agent.email,
-        agentLicense: agent.license,
-        agentPhone: agent.phone
-    };
+    const url =
+        WEB_APP_URL +
+        "?type=newListing" +
+        "&listingId=" + encodeURIComponent("HQ-" + Date.now()) +
+        "&address=" + encodeURIComponent(address) +
+        "&price=" + encodeURIComponent(price) +
+        "&beds=" + encodeURIComponent(beds) +
+        "&baths=" + encodeURIComponent(baths) +
+        "&description=" + encodeURIComponent(description) +
+        "&agentName=" + encodeURIComponent(agent.name) +
+        "&agentEmail=" + encodeURIComponent(agent.email) +
+        "&agentLicense=" + encodeURIComponent(agent.license) +
+        "&agentPhone=" + encodeURIComponent(agent.phone);
 
     try {
-        const res = await fetch(WEB_APP_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        // If server returned non-2xx, show raw response text to help debug
-        if (!res.ok) {
-            const text = await res.text();
-            alert("Server error: " + text);
-            return;
-        }
-
+        const res = await fetch(url);
         const data = await res.json();
 
         if (data.result === "success") {
             alert("Listing saved!");
             window.location.href = "HomeQuestMain.html";
         } else {
-            alert("Error saving listing: " + (data.message || data.result));
+            alert("Error saving listing");
         }
     } catch (err) {
         alert("Network or server error while saving listing.");
     }
 }
+
 </script>
 </body>
 </html>
