@@ -62,7 +62,6 @@
 </div>
 
 <script>
-
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxov-VmN-HDOXX5cfDptoEJ6pBXzba2HUS0iLK_isAxahuqxOGfRZh16G_HBBF55M7Y/exec";
 
 // Protect page — require logged‑in agent
@@ -83,8 +82,8 @@ async function saveListing() {
     }
 
     const payload = {
-        type: "newListing",
-        listingId: "HQ-" + Date.now(),   // FIXED: matches backend
+        // 👇 match Apps Script: listingID (capital D)
+        listingID: "HQ-" + Date.now(),
         address: address,
         price: price,
         beds: beds,
@@ -104,20 +103,25 @@ async function saveListing() {
             body: JSON.stringify(payload)
         });
 
-        // If Apps Script throws an internal error, this will fail.
+        // If server returned non-2xx, show raw response text to help debug
+        if (!res.ok) {
+            const text = await res.text();
+            alert("Server error: " + text);
+            return;
+        }
+
         const data = await res.json();
 
         if (data.result === "success") {
             alert("Listing saved!");
             window.location.href = "HomeQuestMain.html";
         } else {
-            alert("Error saving listing");
+            alert("Error saving listing: " + (data.message || data.result));
         }
     } catch (err) {
         alert("Network or server error while saving listing.");
     }
 }
-
 </script>
 </body>
 </html>
