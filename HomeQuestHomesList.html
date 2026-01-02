@@ -5,6 +5,16 @@
 <title>New Listing</title>
 
 <style>
+    :root {
+        --hq-primary: #4a6cf7;
+        --hq-bg: #f4f6fb;
+        --hq-card-bg: #ffffff;
+        --hq-border: #d9dce3;
+        --hq-text: #1e1e2d;
+        --hq-muted: #6b7280;
+        --hq-radius: 14px;
+        --hq-shadow: 0 0px 10px rgba(0,0,0,10.06);
+    }
     body {
         background-image: url('HomeQuestBackground.jpeg'); 
         background-size: cover; 
@@ -23,8 +33,18 @@
     .input-group { margin-bottom: 16px; }
     label { font-size: 14px; color: #555; }
     input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; }
-    button { width: 100%; padding: 12px; background: #4a6cf7; color: white; border: none; border-radius: 10px; cursor: pointer; }
-</style>
+    button {width: 100%;
+        padding: 12px;
+        background: var(--hq-primary);
+        color: white;
+        border: none;
+        border-radius: var(--hq-radius);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
+    </style>
 </head>
 
 <body>
