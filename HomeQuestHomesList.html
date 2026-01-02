@@ -83,7 +83,7 @@ async function saveListing() {
     const url =
         WEB_APP_URL +
         "?type=newListing" +
-        "&listingId=" + encodeURIComponent("HQ-" + Date.now()) +
+        "&listingId=" + encodeURIComponent("HQ-" + Date.now()) +   // FIXED: lowercase d
         "&address=" + encodeURIComponent(address) +
         "&price=" + encodeURIComponent(price) +
         "&beds=" + encodeURIComponent(beds) +
@@ -102,13 +102,12 @@ async function saveListing() {
             alert("Listing saved!");
             window.location.href = "HomeQuestMain.html";
         } else {
-            alert("Error saving listing");
+            alert("Error saving listing: " + JSON.stringify(data));
         }
     } catch (err) {
         alert("Network or server error while saving listing.");
     }
 }
 
-</script>
-</body>
+</script></body>
 </html>
