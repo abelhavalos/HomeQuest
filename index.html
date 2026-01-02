@@ -280,7 +280,6 @@ async function login() {
 
 /* ============================
    REGISTRATION (GET)
-   (POST is blocked by CORS)
 ============================ */
 async function register() {
     const name = document.getElementById("regName");
@@ -319,7 +318,7 @@ async function register() {
 
     const url =
         "https://script.google.com/macros/s/AKfycbxbXa_iG20kscaladIRoN9U6FIvg-yAfjleou_qwVIrATr5nyZJXCLVjlS9fcv4vYc82Q/exec" +
-        `?type=agentRegister` +
+        `?type=agentRegister` +   // ⭐ REQUIRED
         `&name=${encodeURIComponent(name.value.trim())}` +
         `&email=${encodeURIComponent(email.value.trim())}` +
         `&password=${encodeURIComponent(pass.value.trim())}`;
@@ -336,7 +335,7 @@ async function register() {
         } else if (data.result === "duplicate") {
             showError(email, "Email already registered");
         } else {
-            alert("Registration error: " + data.message);
+            alert("Registration error: " + (data.message || "Unknown error"));
         }
 
     } catch (err) {
