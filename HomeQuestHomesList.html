@@ -64,19 +64,31 @@
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx-XSqHN_zDI1HSGrhH0NDyv_lakaiOfBrSoOR29mIM16lc0lvqSr7EVk5NTHiAdeTEYg/exec";
 
-// Protect page
+// Protect page — require logged‑in agent
 const agent = JSON.parse(localStorage.getItem("hqAgent"));
 if (!agent) window.location.href = "AgentLogin.html";
 
 async function saveListing() {
+    const address = document.getElementById("address").value.trim();
+    const price = document.getElementById("price").value.trim();
+    const beds = document.getElementById("beds").value.trim();
+    const baths = document.getElementById("baths").value.trim();
+    const description = document.getElementById("description").value.trim();
+
+    // Basic validation
+    if (!address || !price || !beds || !baths) {
+        alert("Please fill in all required fields.");
+        return;
+    }
+
     const payload = {
         type: "newListing",
         listingId: "HQ-" + Date.now(),
-        address: document.getElementById("address").value.trim(),
-        price: document.getElementById("price").value.trim(),
-        beds: document.getElementById("beds").value.trim(),
-        baths: document.getElementById("baths").value.trim(),
-        description: document.getElementById("description").value.trim(),
+        address: address,
+        price: price,
+        beds: beds,
+        baths: baths,
+        description: description,
 
         agentName: agent.name,
         agentEmail: agent.email,
@@ -84,22 +96,25 @@ async function saveListing() {
         agentPhone: agent.phone
     };
 
-    const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (data.result === "success") {
-        alert("Listing saved!");
-        window.location.href = "HomeQuestMain.html";
-    } else {
-        alert("Error saving listing");
+        if (data.result === "success") {
+            alert("Listing saved!");
+            window.location.href = "HomeQuestMain.html";
+        } else {
+            alert("Error saving listing");
+        }
+    } catch (err) {
+        alert("Network or server error while saving listing.");
     }
 }
 </script>
-
 </body>
 </html>
