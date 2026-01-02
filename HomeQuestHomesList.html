@@ -62,7 +62,7 @@
 </div>
 
 <script>
-    
+
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxov-VmN-HDOXX5cfDptoEJ6pBXzba2HUS0iLK_isAxahuqxOGfRZh16G_HBBF55M7Y/exec";
 
 // Protect page — require logged‑in agent
@@ -84,7 +84,7 @@ async function saveListing() {
 
     const payload = {
         type: "newListing",
-        listingId: "HQ-" + Date.now(),
+        listingId: "HQ-" + Date.now(),   // FIXED: matches backend
         address: address,
         price: price,
         beds: beds,
@@ -104,6 +104,7 @@ async function saveListing() {
             body: JSON.stringify(payload)
         });
 
+        // If Apps Script throws an internal error, this will fail.
         const data = await res.json();
 
         if (data.result === "success") {
@@ -116,6 +117,7 @@ async function saveListing() {
         alert("Network or server error while saving listing.");
     }
 }
+
 </script>
 </body>
 </html>
