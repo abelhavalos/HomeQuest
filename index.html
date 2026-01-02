@@ -218,6 +218,7 @@
 
 </div>
 <script>
+
 function toggleForms() {
     const login = document.getElementById("loginForm");
     const register = document.getElementById("registerForm");
@@ -230,6 +231,9 @@ function toggleForms() {
     clearErrors();
 }
 
+/* ============================
+   LOGIN (GET)
+============================ */
 async function login() {
     const email = document.getElementById("email");
     const pass = document.getElementById("password");
@@ -255,7 +259,7 @@ async function login() {
 
     try {
         const res = await fetch(
-            `https://script.google.com/macros/s/AKfycbxbXa_iG20kscaladIRoN9U6FIvg-yAfjleou_qwVIrATr5nyZJXCLVjlS9fcv4vYc82Q/exec?email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(pass.value)}`
+            `https://script.google.com/macros/s/AKfycbxbXa_iG20kscaladIRoN9U6FIvg-yAfjleou_qwVIrATr5nyZJXCLVjlS9fcv4vYc82Q/exec?type=agentLogin&email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(pass.value)}`
         );
 
         const data = await res.json();
@@ -263,7 +267,6 @@ async function login() {
 
         if (data.result === "success") {
             localStorage.setItem("hqUser", data.name);
-            /*alert("Welcome, " + data.name);*/
             window.location.href = "HomeQuestMain.html";
         } else {
             showError(pass, "Incorrect email or password");
@@ -275,6 +278,10 @@ async function login() {
     }
 }
 
+/* ============================
+   REGISTRATION (GET)
+   (POST is blocked by CORS)
+============================ */
 async function register() {
     const name = document.getElementById("regName");
     const email = document.getElementById("regEmail");
@@ -310,36 +317,37 @@ async function register() {
 
     btn.classList.add("loading");
 
-    const payload = {
-        name: name.value.trim(),
-        email: email.value.trim(),
-        password: pass.value.trim()
-    };
+    const url =
+        "https://script.google.com/macros/s/AKfycbxbXa_iG20kscaladIRoN9U6FIvg-yAfjleou_qwVIrATr5nyZJXCLVjlS9fcv4vYc82Q/exec" +
+        `?type=agentRegister` +
+        `&name=${encodeURIComponent(name.value.trim())}` +
+        `&email=${encodeURIComponent(email.value.trim())}` +
+        `&password=${encodeURIComponent(pass.value.trim())}`;
 
     try {
-        await fetch(
-            "https://script.google.com/macros/s/AKfycbxbXa_iG20kscaladIRoN9U6FIvg-yAfjleou_qwVIrATr5nyZJXCLVjlS9fcv4vYc82Q/exec",
-            {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            }
-        );
+        const res = await fetch(url);
+        const data = await res.json();
 
         btn.classList.remove("loading");
 
-        // We cannot read the response in no-cors mode.
-        // So we assume success unless the request fails.
-        alert("Account created!");
-        toggleForms();
+        if (data.result === "success") {
+            alert("Account created!");
+            toggleForms();
+        } else if (data.result === "duplicate") {
+            showError(email, "Email already registered");
+        } else {
+            alert("Registration error: " + data.message);
+        }
 
     } catch (err) {
         btn.classList.remove("loading");
-        alert("Error saving data.");
+        alert("Network error while creating account.");
     }
 }
 
+/* ============================
+   ERROR HANDLING
+============================ */
 function showError(input, message) {
     input.classList.add("error");
 
@@ -354,7 +362,7 @@ function clearErrors() {
     document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
     document.querySelectorAll(".error-text").forEach(el => el.remove());
 }
-</script>
 
+</script>
 </body>
 </html>
