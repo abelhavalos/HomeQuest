@@ -197,7 +197,7 @@
 </div>
 
 <script>
-const WEBAPPURL = "https://script.google.com/macros/s/AKfycbxrjhVZC506fwPeLiqb_2BSGOg0po1B0vA4PFV3drUI_J4suand8k1NOE1_zcNaIabmdg/exec"; // your URL
+const WEBAPPURL = "https://script.google.com/macros/s/AKfycbxKln5QKDPuBR8aJaFYzF_KxFQzv8AnIyX-IhagY0xLs_C6C3Oemkt9IH-Q3zn0appcPQ/exec"; // Replace with your deployed URL
 
 function toggleForms() {
     const login = document.getElementById("loginForm");
@@ -225,6 +225,9 @@ function clearErrors() {
     document.querySelectorAll(".error-text").forEach(el => el.remove());
 }
 
+/* ============================================================
+   🔑 AGENT LOGIN — GET REQUEST
+   ============================================================ */
 async function agentLogin() {
     const email = document.getElementById("agentEmail");
     const pass = document.getElementById("agentPass");
@@ -238,17 +241,10 @@ async function agentLogin() {
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(WEBAPPURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                type: "agentLogin",
-                email: email.value.trim(),
-                password: pass.value.trim()
-            })
-        });
-
+        const url = `${WEBAPPURL}?type=agentLogin&email=${encodeURIComponent(email.value.trim())}&password=${encodeURIComponent(pass.value.trim())}`;
+        const res = await fetch(url);
         const data = await res.json();
+
         btn.classList.remove("loading");
 
         if (data.result === "success") {
@@ -264,6 +260,9 @@ async function agentLogin() {
     }
 }
 
+/* ============================================================
+   🆕 AGENT REGISTRATION — GET REQUEST
+   ============================================================ */
 async function agentRegister() {
     const name = document.getElementById("regName");
     const email = document.getElementById("regEmail");
@@ -283,20 +282,17 @@ async function agentRegister() {
     btn.classList.add("loading");
 
     try {
-        const res = await fetch(WEBAPPURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                type: "agentRegister",
-                name: name.value.trim(),
-                email: email.value.trim(),
-                password: pass.value.trim(),
-                license: license.value.trim(),
-                phone: phone.value.trim()
-            })
-        });
+        const url =
+            `${WEBAPPURL}?type=agentRegister` +
+            `&name=${encodeURIComponent(name.value.trim())}` +
+            `&email=${encodeURIComponent(email.value.trim())}` +
+            `&password=${encodeURIComponent(pass.value.trim())}` +
+            `&license=${encodeURIComponent(license.value.trim())}` +
+            `&phone=${encodeURIComponent(phone.value.trim())}`;
 
+        const res = await fetch(url);
         const data = await res.json();
+
         btn.classList.remove("loading");
 
         if (data.result === "duplicate") {
@@ -311,10 +307,8 @@ async function agentRegister() {
 
     } catch (err) {
         btn.classList.remove("loading");
-        alert("Registration error.",err);
+        alert("Registration error.");
     }
 }
-</script>
-
-</body>
+</script></body>
 </html>
